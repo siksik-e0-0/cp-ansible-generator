@@ -5306,6 +5306,8 @@
             // kafka_broker_service_user/group: systemd User=/Group= for broker process
             if (allVars.kafka_broker_service_user !== undefined) set('kafka_broker_service_user', String(allVars.kafka_broker_service_user));
             if (allVars.kafka_broker_service_group !== undefined) set('kafka_broker_service_group', String(allVars.kafka_broker_service_group));
+            // enable_node_id: KRaft 모드 node.id 명시 여부 (false일 때 YAML에 출력됨)
+            if (allVars.enable_node_id !== undefined) set('enable_node_id', Boolean(allVars.enable_node_id));
 
             // Log dirs
             if (allVars.kafka_broker_log_dir !== undefined) set('kafka_broker_log_dir', String(allVars.kafka_broker_log_dir));
@@ -5483,8 +5485,26 @@
             if (allVars.ldap_group_member_attribute_pattern !== undefined) set('ldap_group_member_attribute_pattern', String(allVars.ldap_group_member_attribute_pattern));
 
             // ── Step 10: C3 SSO / OIDC ──
-            if (allVars.sso_mode !== undefined) set('sso_mode', allVars.sso_mode);
-            // oidc_idp_issuer_url in YAML → state.data.oidc_issuer
+            if (allVars.sso_mode !== undefined) {
+                set('sso_mode', allVars.sso_mode);
+                // sso_mode가 있으면 OIDC 활성화로 판단
+                if (String(allVars.sso_mode).toLowerCase() === 'oidc') {
+                    state.data.control_center_oidc_enabled = true;
+                    importedCount++;
+                }
+            }
+            // cp-ansible top-level sso_* 키 처리 (hosts_ldap_rbac_oidc.yml 패턴)
+            if (allVars.sso_client_id !== undefined) set('oidc_client_id', String(allVars.sso_client_id));
+            if (allVars.sso_client_password !== undefined) set('oidc_client_secret', String(allVars.sso_client_password));
+            if (allVars.sso_issuer_url !== undefined) set('oidc_issuer', String(allVars.sso_issuer_url));
+            if (allVars.sso_jwks_uri !== undefined) set('oidc_jwks_uri', String(allVars.sso_jwks_uri));
+            if (allVars.sso_authorize_uri !== undefined) set('oidc_authorize_uri', String(allVars.sso_authorize_uri));
+            if (allVars.sso_token_uri !== undefined) set('oidc_token_uri', String(allVars.sso_token_uri));
+            if (allVars.sso_sub_claim !== undefined) set('oidc_sub_claim_name', String(allVars.sso_sub_claim));
+            if (allVars.sso_groups_claim !== undefined) set('oidc_groups_claim_name', String(allVars.sso_groups_claim));
+            if (allVars.sso_groups_scope !== undefined) set('oidc_groups_claim_scope', String(allVars.sso_groups_scope));
+            if (allVars.sso_refresh_token !== undefined) set('oidc_refresh_token_enabled', Boolean(allVars.sso_refresh_token));
+            // oidc_idp_issuer_url in YAML → state.data.oidc_issuer (구형 키 호환)
             if (allVars.oidc_idp_issuer_url !== undefined) set('oidc_issuer', String(allVars.oidc_idp_issuer_url));
             if (allVars.oidc_client_id !== undefined) set('oidc_client_id', String(allVars.oidc_client_id));
             if (allVars.oidc_client_secret !== undefined) set('oidc_client_secret', String(allVars.oidc_client_secret));
@@ -5561,6 +5581,11 @@
             if (allVars.control_center_next_gen_dependencies_config_path !== undefined) set('c3_dependencies_config_path', String(allVars.control_center_next_gen_dependencies_config_path));
             if (allVars.control_center_next_gen_ssl_enabled !== undefined) set('control_center_next_gen_ssl_enabled', Boolean(allVars.control_center_next_gen_ssl_enabled));
             if (allVars.ssl_file_dir !== undefined) set('ssl_file_dir', String(allVars.ssl_file_dir));
+            // C3 dependency: Prometheus/Alertmanager 포트 및 basic_auth 직접 키 처리
+            if (allVars.control_center_next_gen_dependency_prometheus_port !== undefined) set('prometheus_port', Number(allVars.control_center_next_gen_dependency_prometheus_port));
+            if (allVars.control_center_next_gen_dependency_prometheus_basic_auth_enabled !== undefined) set('prometheus_basic_auth_enabled', Boolean(allVars.control_center_next_gen_dependency_prometheus_basic_auth_enabled));
+            if (allVars.control_center_next_gen_dependency_alertmanager_port !== undefined) set('alertmanager_port', Number(allVars.control_center_next_gen_dependency_alertmanager_port));
+            if (allVars.control_center_next_gen_dependency_alertmanager_basic_auth_enabled !== undefined) set('alertmanager_basic_auth_enabled', Boolean(allVars.control_center_next_gen_dependency_alertmanager_basic_auth_enabled));
 
             // ── Step 15: Advanced ──
             if (allVars.confluent_license !== undefined) set('confluent_license', String(allVars.confluent_license));
@@ -5572,6 +5597,8 @@
             if (allVars.rbac_enabled_private_pem_path !== undefined) set('rbac_enabled_private_pem_path', String(allVars.rbac_enabled_private_pem_path));
 
             // ── Step 14: JMX Exporter ──
+            // jmxexporter_enabled: true → state.data.jmx_enabled (UI 토글과 연동)
+            if (allVars.jmxexporter_enabled !== undefined) set('jmx_enabled', Boolean(allVars.jmxexporter_enabled));
             if (allVars.jmxexporter_jar_url !== undefined) set('jmxexporter_jar_url', String(allVars.jmxexporter_jar_url));
             if (allVars.jmxexporter_jar_path !== undefined) set('jmxexporter_jar_path', String(allVars.jmxexporter_jar_path));
             if (allVars.jmxexporter_url_remote !== undefined) set('jmxexporter_url_remote', Boolean(allVars.jmxexporter_url_remote));
