@@ -181,14 +181,29 @@
             padding: 2rem;
         }
 
+        .resizer {
+            width: 5px;
+            background: var(--border);
+            cursor: col-resize;
+            flex-shrink: 0;
+            transition: background 0.2s;
+            position: relative;
+            z-index: 10;
+        }
+        .resizer:hover, .resizer.dragging {
+            background: var(--accent);
+        }
+
         .right-panel {
-            width: 500px;
+            width: 640px;
+            min-width: 300px;
+            max-width: 900px;
             background: var(--surface);
-            border-left: 1px solid var(--border);
             padding: 1.5rem;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
+            flex-shrink: 0;
         }
 
         .step-content {
@@ -919,7 +934,8 @@
 
         <div class="main">
             <div class="left-panel" id="leftPanel"></div>
-            <div class="right-panel">
+            <div class="resizer" id="panelResizer"></div>
+            <div class="right-panel" id="rightPanel">
                 <div class="yaml-title">YAML 미리보기</div>
                 <div class="yaml-card">
                     <div class="yaml-content" id="yamlPreview"></div>
@@ -6376,6 +6392,41 @@
         renderStepContent();
         updateYamlPreview();
         initImportModal();
+
+        // ============================================================
+        // YAML 패널 리사이저 (드래그로 너비 조정)
+        // ============================================================
+        (function() {
+            const resizer = document.getElementById('panelResizer');
+            const rightPanel = document.getElementById('rightPanel');
+            let startX, startWidth;
+
+            resizer.addEventListener('mousedown', (e) => {
+                startX = e.clientX;
+                startWidth = rightPanel.offsetWidth;
+                resizer.classList.add('dragging');
+                document.body.style.userSelect = 'none';
+                document.body.style.cursor = 'col-resize';
+
+                const onMouseMove = (e) => {
+                    const dx = startX - e.clientX;
+                    const newWidth = Math.max(300, Math.min(900, startWidth + dx));
+                    rightPanel.style.width = newWidth + 'px';
+                };
+
+                const onMouseUp = () => {
+                    resizer.classList.remove('dragging');
+                    document.body.style.userSelect = '';
+                    document.body.style.cursor = '';
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.removeEventListener('mouseup', onMouseUp);
+                };
+
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+                e.preventDefault();
+            });
+        })();
 
     </script>
 </body>
