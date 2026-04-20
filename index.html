@@ -3972,6 +3972,18 @@
                     if (state.data.common_user) lines.push(`    schema_registry_user: ${state.data.common_user}`);
                     if (state.data.common_group) lines.push(`    schema_registry_group: ${state.data.common_group}`);
                 }
+                if (state.data.components.kafka_connect) {
+                    if (state.data.common_user) lines.push(`    kafka_connect_user: ${state.data.common_user}`);
+                    if (state.data.common_group) lines.push(`    kafka_connect_group: ${state.data.common_group}`);
+                }
+                if (state.data.components.ksql) {
+                    if (state.data.common_user) lines.push(`    ksql_user: ${state.data.common_user}`);
+                    if (state.data.common_group) lines.push(`    ksql_group: ${state.data.common_group}`);
+                }
+                if (state.data.components.kafka_rest) {
+                    if (state.data.common_user) lines.push(`    kafka_rest_user: ${state.data.common_user}`);
+                    if (state.data.common_group) lines.push(`    kafka_rest_group: ${state.data.common_group}`);
+                }
                 if (state.data.components.control_center_next_gen) {
                     if (state.data.common_user) lines.push(`    control_center_next_gen_user: ${state.data.common_user}`);
                     if (state.data.common_group) lines.push(`    control_center_next_gen_group: ${state.data.common_group}`);
@@ -5251,10 +5263,12 @@
             }
             const knownGroups = ['kafka_controller_group','kafka_broker_group','schema_registry_group','control_center_next_gen_group'];
             const groupValues = knownGroups.map(k => allVars[k]).filter(v => v !== undefined);
-            if (groupValues.length > 0 && groupValues.every(v => v === groupValues[0])) {
+            const allGroupsSame = groupValues.length > 0 && groupValues.every(v => v === groupValues[0]);
+            if (allGroupsSame && state.data.common_user_group) {
+                // 공통 모드(사용자도 동일)일 때만 common_group에 저장
                 state.data.common_group = String(groupValues[0]);
             } else if (groupValues.length > 0) {
-                // 그룹도 컴포넌트별로 저장
+                // per-component 모드 또는 그룹이 다른 경우 → component_users에 개별 저장
                 state.data.component_users = state.data.component_users || {};
                 const allComponentGroupKeys = [
                     'kafka_controller_group','kafka_broker_group','schema_registry_group',
