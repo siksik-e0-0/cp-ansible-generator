@@ -4205,16 +4205,6 @@
             if (state.data.schema_registry_kafka_listener_name)
                 lines.push(`    schema_registry_kafka_listener_name: ${state.data.schema_registry_kafka_listener_name}`);
 
-            // 컴포넌트 LDAP 사용자 직접 값 (all.vars, Jinja2 ref 대신 실제 값)
-            if (state.data.control_center_next_gen_ldap_user)
-                lines.push(`    control_center_next_gen_ldap_user: ${state.data.control_center_next_gen_ldap_user}`);
-            if (state.data.control_center_next_gen_ldap_password)
-                lines.push(`    control_center_next_gen_ldap_password: ${state.data.control_center_next_gen_ldap_password}`);
-            if (state.data.schema_registry_ldap_user)
-                lines.push(`    schema_registry_ldap_user: ${state.data.schema_registry_ldap_user}`);
-            if (state.data.schema_registry_ldap_password)
-                lines.push(`    schema_registry_ldap_password: ${state.data.schema_registry_ldap_password}`);
-
             // metrics_reporter_enabled
             if (state.data.kafka_controller_metrics_reporter_enabled !== undefined)
                 lines.push(`    kafka_controller_metrics_reporter_enabled: ${state.data.kafka_controller_metrics_reporter_enabled ? 'true' : 'false'}`);
@@ -5367,15 +5357,15 @@
             if (allVars.control_center_next_gen_mds_cert_auth_only !== undefined)
                 set('control_center_next_gen_mds_cert_auth_only', Boolean(allVars.control_center_next_gen_mds_cert_auth_only));
 
-            // 컴포넌트 LDAP 사용자 (all.vars 직접 값)
-            if (allVars.control_center_next_gen_ldap_user !== undefined)
-                set('control_center_next_gen_ldap_user', String(allVars.control_center_next_gen_ldap_user));
-            if (allVars.control_center_next_gen_ldap_password !== undefined)
-                set('control_center_next_gen_ldap_password', String(allVars.control_center_next_gen_ldap_password));
-            if (allVars.schema_registry_ldap_user !== undefined)
-                set('schema_registry_ldap_user', String(allVars.schema_registry_ldap_user));
-            if (allVars.schema_registry_ldap_password !== undefined)
-                set('schema_registry_ldap_password', String(allVars.schema_registry_ldap_password));
+            // 컴포넌트 LDAP 사용자 (component_ldap_users에 저장 → UI와 일치)
+            state.data.component_ldap_users = state.data.component_ldap_users || {};
+            ['control_center_next_gen_ldap_user', 'control_center_next_gen_ldap_password',
+             'schema_registry_ldap_user', 'schema_registry_ldap_password',
+             'kafka_broker_ldap_user', 'kafka_broker_ldap_password'
+            ].forEach(k => {
+                if (allVars[k] !== undefined)
+                    state.data.component_ldap_users[k] = String(allVars[k]);
+            });
 
             // metrics_reporter_enabled
             if (allVars.kafka_controller_metrics_reporter_enabled !== undefined)
