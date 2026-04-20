@@ -5192,11 +5192,21 @@
                     if (hv.ip !== undefined) hostEntry.ip = String(hv.ip);
                     // Broker-specific
                     if (hv.broker_id !== undefined) hostEntry.broker_id = Number(hv.broker_id);
-                    if (hv.broker_ip !== undefined) hostEntry.broker_ip = String(hv.broker_ip);
+                    if (hv.broker_ip !== undefined) {
+                        hostEntry.broker_ip = String(hv.broker_ip);
+                    } else if (comp === 'kafka_broker' && hv.ansible_host !== undefined) {
+                        // ansible_host만 있는 구형 YAML → broker_ip로 매핑
+                        hostEntry.broker_ip = String(hv.ansible_host);
+                    }
                     // Controller-specific: cp-ansible uses node_id (not kafka_controller_node_id)
                     if (hv.node_id !== undefined) hostEntry.node_id = Number(hv.node_id);
                     else if (hv.kafka_controller_node_id !== undefined) hostEntry.node_id = Number(hv.kafka_controller_node_id);
-                    if (hv.node_ip !== undefined) hostEntry.node_ip = String(hv.node_ip);
+                    if (hv.node_ip !== undefined) {
+                        hostEntry.node_ip = String(hv.node_ip);
+                    } else if ((comp === 'kafka_controller' || comp === 'control_center_next_gen') && hv.ansible_host !== undefined) {
+                        // ansible_host만 있는 구형 YAML → node_ip로 매핑
+                        hostEntry.node_ip = String(hv.ansible_host);
+                    }
                     // Schema Registry host-specific vars
                     if (hv.schema_registry_host_name !== undefined) hostEntry.schema_registry_host_name = String(hv.schema_registry_host_name);
                     if (hv.schema_registry_listener_hostname !== undefined) hostEntry.schema_registry_listener_hostname = String(hv.schema_registry_listener_hostname);
