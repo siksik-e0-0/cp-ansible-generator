@@ -1047,8 +1047,6 @@
                 common_user_group: true,
                 common_user: '',
                 common_group: '',
-                kafka_broker_service_user: '',
-                kafka_broker_service_group: '',
                 enable_node_id: false,
                 component_users: {},
                 log_dirs: {},
@@ -1907,18 +1905,6 @@
                 form.appendChild(section2);
             }
 
-            const sectionSvc = createFormSection('브로커 서비스 계정 (선택)', [
-                { type: 'text', label: 'Broker 서비스 OS 사용자 (kafka_broker_service_user)',
-                  key: 'kafka_broker_service_user',
-                  help: '예: 1726_admin1 (cp-ansible systemd 서비스 User= 설정에 사용)' },
-                { type: 'text', label: 'Broker 서비스 OS 그룹 (kafka_broker_service_group)',
-                  key: 'kafka_broker_service_group',
-                  help: '예: 1726_admin1' },
-                { type: 'toggle', label: 'enable_node_id (KRaft 노드 ID 활성화)',
-                  key: 'enable_node_id',
-                  help: 'KRaft 모드에서 node.id 명시 여부 (기본값: false)' },
-            ]);
-            form.appendChild(sectionSvc);
 
             const section3 = createFormSection('로그 디렉토리', [
                 { type: 'text', label: 'Controller 로그 경로', key: 'kafka_controller_log_dir' },
@@ -3994,11 +3980,6 @@
                 });
             }
 
-            // 브로커 서비스 OS 계정 (kafka_broker_service_user/group) — systemd User= 설정
-            if (state.data.kafka_broker_service_user) lines.push(`    kafka_broker_service_user: ${state.data.kafka_broker_service_user}`);
-            if (state.data.kafka_broker_service_group) lines.push(`    kafka_broker_service_group: ${state.data.kafka_broker_service_group}`);
-            // enable_node_id: false 일 때만 명시 출력 (KRaft 기본값은 true이므로 false만 의미있음)
-            if (state.data.enable_node_id === false) lines.push(`    enable_node_id: false`);
 
             // 로그 디렉토리 (Step 4 폼에서 직접 state.data에 쓰는 필드를 읽음)
             if (state.data.kafka_controller_log_dir) lines.push(`    kafka_controller_log_dir: ${state.data.kafka_controller_log_dir}`);
@@ -5283,9 +5264,6 @@
                 });
             }
 
-            // kafka_broker_service_user/group: systemd User=/Group= for broker process
-            if (allVars.kafka_broker_service_user !== undefined) set('kafka_broker_service_user', String(allVars.kafka_broker_service_user));
-            if (allVars.kafka_broker_service_group !== undefined) set('kafka_broker_service_group', String(allVars.kafka_broker_service_group));
             // enable_node_id: KRaft 모드 node.id 명시 여부 (false일 때 YAML에 출력됨)
             if (allVars.enable_node_id !== undefined) set('enable_node_id', Boolean(allVars.enable_node_id));
 
