@@ -5248,6 +5248,8 @@
                 state.data.common_user = String(userValues[0]);
                 importedCount++;
             } else {
+                // 사용자가 다를 경우 → per-component 모드로 전환
+                state.data.common_user_group = false;
                 // 모든 컴포넌트 user 개별 저장 (round-trip 보장)
                 state.data.component_users = state.data.component_users || {};
                 const allComponentUserKeys = [
